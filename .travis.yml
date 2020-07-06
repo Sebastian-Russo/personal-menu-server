@@ -2,12 +2,12 @@
  node_js: node
  services:
      - mongodb
-  deploy:
-    provider: heroku
-    edge: true
-    api_key:
-  secure: 
-  app: infinite-plains-45239
-  on:
-    repo: Sebastian-Russo/personal-menu-server
+  # deploy:
+  #   provider: heroku
+  #   edge: true
+  #   api_key:
+  # secure: 
+  # app: infinite-plains-45239
+  # on:
+  #   repo: Sebastian-Russo/personal-menu-server
 
