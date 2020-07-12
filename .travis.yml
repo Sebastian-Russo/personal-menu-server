@@ -2,8 +2,8 @@
  node_js: node
  services:
      - mongodb
-deploy:
-  provider: heroku
-  api_key:
-    secure: "26897732-664c-4149-96bf-a180724b88a5"
-    app: infinite-plains-45239
+# deploy:
+#   provider: heroku
+#   api_key:
+#     secure: "26897732-664c-4149-96bf-a180724b88a5"
+#     app: infinite-plains-45239
