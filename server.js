@@ -91,12 +91,15 @@ app.get('/api/recipes', (req, res) => {
 
 app.get('/api/recipes/:id', (req, res) => {
     const recipe = recipes.find(recipe => recipe.id === parseInt(req.params.id));
-    if(!recipe) res.status(404).send('The recipe was not found');
+    if(!recipe) {
+        res.status(404).send('The recipe was not found');
+        return;
+    }
     res.send(recipe)
 });
 
+// ISSUE WITH VALIDATOR 
 app.post('/api/recipes', (req, res) => {
-
     const requiredFields = ["name", "categories", "ingredients", "directions"];
     const missingField = requiredFields.find(field => !(field in req.body));
     console.log(missingField)
@@ -120,8 +123,51 @@ app.post('/api/recipes', (req, res) => {
     res.send(recipe); 
 })
 
+// ISSUE WITH VALIDATOR 
+app.put('/api/recipes/:id', (req, res) => {
+    const recipe = recipes.find(recipe => recipe.id === parseInt(req.params.id));
+    if(!recipe) {
+        res.status(404).send('The recipe was not found');
+    }
 
+    // validate
+    // if invalid, return 400 
+    const requiredFields = ["name", "categories", "ingredients", "directions"];
+    const missingField = requiredFields.find(field => !(field in req.body));
+    console.log(missingField)
+    if (!missingField) {
+        res.status(400).json({
+            message: `Required \`${missingField}\` missing.`
+        });
+        return;
+    }
+    console.log(req.body);
 
+    // update course 
+    recipe.name = req.body.name;
+    recipe.categories = req.body.categories;
+    recipe.directions = req.body.directions;
+    recipe.ingredients = req.body.ingredients;
+
+    // return the updated course
+    res.send(recipe);
+})
+
+app.delete('/api/recipes/:id', (req, res) => {
+    // look up course
+    // if it doesn't exist, return 404
+    const recipe = recipes.find(recipe => recipe.id === parseInt(req.params.id));
+    if(!recipe) {
+        res.status(404).send('The recipe was not found');
+        return;
+    }
+
+    // delete
+    const index = recipes.indexOf(recipe);
+    recipes.splice(index, 1)
+    // return the same course 
+    res.send(recipe);
+})
 
 
 // an enviorment variable is basically part of the environment in which the process runs 
