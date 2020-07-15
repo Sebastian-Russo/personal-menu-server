@@ -1,15 +1,9 @@
 'use strict'; 
-
-const express = require("express");
 // const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-
 // do i need this?
 mongoose.Promise = global.Promise;
 
-const Schema = mongoose.Schema; 
-
-mongoose.Promise = global.Promise; 
 
 const recipeSchema = mongoose.Schema({
     name: { type: String, required: true },
@@ -23,4 +17,6 @@ const recipeSchema = mongoose.Schema({
     ]
 })
 
-module.exports = mongoose.model("Recipe", recipeSchema);
+const Recipe = mongoose.model("Recipe", recipeSchema); // "name", 'schema to use'
+
+module.exports = { Recipe };
