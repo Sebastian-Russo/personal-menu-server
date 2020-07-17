@@ -7,7 +7,6 @@ const { Recipe } = require('./models'); // recipe schema
 const router = express.Router();
 
 
-
 // // VOLATILE STORAGE 
 // const recipes = [
 //     {
@@ -87,7 +86,6 @@ const router = express.Router();
 
 
 
-
 router.get('/', (req, res) => {
     Recipe.find()
         .then(recipes => {
@@ -100,15 +98,17 @@ router.get('/', (req, res) => {
 });
 
 router.get('/:id', (req, res) => {
+    console.log(req.params.id)
     Recipe
         .findById(req.params.id)
         .then(recipe => {
             console.log('retrived recipe', recipe)
             res.json({
-                name: req.body.name,
-                categories: req.body.categories, 
-                ingredients: req.body.ingredients,
-                directions: req.body.directions
+                id: recipe.name,
+                name: recipe.name,
+                categories: recipe.categories, 
+                ingredients: recipe.ingredients,
+                directions: recipe.directions
             });
         })
         .catch(err => {
@@ -147,9 +147,8 @@ router.post('/', (req, res) => {
 })
 
 
-
-// ISSUE WITH VALIDATOR 
 router.put('/:id', (req, res) => {
+    console.log(req.params, req.body.id)
     if(!(req.params.id && req.body.id && req.params.id == req.body.id)) {
         const message = (`Request path id (${req.params.id}) and request body id (${req.body.id}) must match`)
         console.error(message);
@@ -166,13 +165,13 @@ router.put('/:id', (req, res) => {
     });
 
     Recipe
-    .findByIdAndUpdate(req.params.id)
-    .then(updateRecipe => res.status(200).json({
-            id: updateRecipe.id,
-            name: updateRecipe.name,
-            categories: updateRecipe.categories, 
-            ingredients: updateRecipe.ingredients,
-            directions: updateRecipe.directions
+        .findByIdAndUpdate(req.params.id, {set: toUpdate})
+        .then(updateRecipe => res.status(200).json({
+                id: updateRecipe.id,
+                name: updateRecipe.name,
+                categories: updateRecipe.categories, 
+                ingredients: updateRecipe.ingredients,
+                directions: updateRecipe.directions
         }))
         .catch(err => res.status(500).json({ message: 'Internal server error'}));
 })
@@ -180,9 +179,10 @@ router.put('/:id', (req, res) => {
 
 
 router.delete('/:id', (req, res) => {
-    Recipe.findByIdAndRemove(req.params.id)
-    .then(recipe => res.status(204).end())
-    .catch(err => res.status(500).json({ message: "Internal server error" }));
+    Recipe
+        .findByIdAndRemove(req.params.id)
+        .then(recipe => res.status(204).end())
+        .catch(err => res.status(500).json({ message: "Internal server error" }));
 })
 
 

@@ -2,7 +2,6 @@ const express = require('express');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-// const { router: recipeRouter } = required('./recipes');
 const recipeRouter = require("./recipes/router");
 const usersRouter = require("./users/router");
 // const authRouter = require("./auth/router");
@@ -12,7 +11,6 @@ const { PORT, DATABASE_URL } = require('./config');
 mongoose.Promise = global.Promise; // still needed in mogoose v5?
 
 const app = express();
-
 // *** MIDDLEWARE ****
 
 app.use(express.json()); // when we call express.json method, method returns piece of middleware, then call app.use, to use that middleware, in the request process pipeline 

@@ -17,6 +17,17 @@ const recipeSchema = mongoose.Schema({
     ]
 })
 
+// why serialize? 
+recipeSchema.methods.serialize = function() {
+    return {
+        id: this._id,
+        name: this.name,
+        categories: this.categories,
+        directions: this.directions,
+        ingredients: this.ingredients
+    };
+};
+
 const Recipe = mongoose.model("Recipe", recipeSchema); // "name", 'schema to use'
 
 module.exports = { Recipe };

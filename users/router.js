@@ -1,116 +1,128 @@
 'use strict';
 const express = require("express");
-const bodyParser = require('body-parser');
+const { User } = require('./models');
 const router = express.Router();
-const { User } = require('./models')
 
 // Volatile storage
-const users = [
-    {
-        id: 0,
-        firstName: "Sebastian",
-        lastName: "Russo",
-        username: "SebRusso",
-        password: "Sebastian12"
-    },
-    {
-        id: 1,
-        firstName: "Mike",
-        lastName: "Ossig",
-        username: "Irish",
-        password: "gayboy"
-    },
-    {
-        id: 2,
-        firstName: "George",
-        lastName: "K",
-        username: "Goathurder",
-        password: "gayboy2"
-    }
-]
-
+// const users = [
+//     {
+//         id: 0,
+//         firstName: "Sebastian",
+//         lastName: "Russo",
+//         username: "SebRusso",
+//         password: "Sebastian12"
+//     },
+//     {
+//         id: 1,
+//         firstName: "Mike",
+//         lastName: "Ossig",
+//         username: "Irish",
+//         password: "gayboy"
+//     },
+//     {
+//         id: 2,
+//         firstName: "George",
+//         lastName: "K",
+//         username: "Goathurder",
+//         password: "gayboy2"
+//     }
+// ]
+ 
 router.get('/', (req, res) => {
-    res.json({users})
-})
+    User.find()
+        .then(users => {
+            res.json({users})
+        })
+        .catch(err => {
+            console.error(err)
+            res.status(500).json({ message: "Internal server error" })
+        });
+});
 
 router.get('/:id', (req, res) => {
-    const user = users.find(user => user.id === parseInt(req.params.id));
-    if(!user) {
-        res.status(404).send('The user was not found');
-        return;
-    }
-    res.send(user)
+    console.log(req.params.id)
+    User
+        .findById(req.params.id)
+        .then(user => {
+            console.log('retrived user', user)
+            res.json({
+                id: user.id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                username: user.username, 
+                password: user.password
+            });
+        })
+        .catch(err => {
+            console.error(err);
+            res.status(500).json({ message: "Internal server error"});
+        });
 });
 
 // ISSUE WITH VALIDATOR 
 router.post('/', (req, res) => {
-    const requiredFields = ["password", "lastName", "firstName", "userName"];
-    const missingField = requiredFields.find(field => !(field in req.body));
-    console.log(missingField)
-    if (!missingField) {
-        res.status(400).json({
-            message: `Required \`${missingField}\` missing.`
-        });
-        return;
-    }
+//     const requiredFields = ["password", "lastName", "firstName", "userName"];
+//     const missingField = requiredFields.find(field => !(field in req.body));
+//     console.log(missingField)
+//     if (!missingField) {
+//         res.status(400).json({
+//             message: `Required \`${missingField}\` missing.`
+//         });
+//         return;
+//     }
     console.log(req.body);
 
-    const user = {
-        id: users.length + 1,
+    User.create({
         firstName: req.body.firstName,
         lastName: req.body.lastName, 
         username: req.body.username,
         password: req.body.password
-    };
-
-    users.push(user); // push to array above in volatile storage
-    res.send(user); 
+    })
+    .then(user => {
+        console.log(user)
+        return res.status(201).json(user)
+    })
+    .catch(err => {
+        console.error(err);
+        res.status(500).json({ message: "Internal server error"});
+    });
 })
 
 // ISSUE WITH VALIDATOR 
 router.put('/:id', (req, res) => {
-    const user = users.find(user => user.id === parseInt(req.params.id));
-    if(!user) {
-        res.status(404).send('The user was not found');
+    console.log(req.params, req.body.id)
+    if(!(req.params.id && req.body.id && req.params.id == req.body.id)) {
+        const message = (`Request path id (${req.params.id}) and request body id (${req.body.id}) must match`)
+        console.error(message);
+        return res.status(400).json({message: message})
     }
 
-    // validate
-    // if invalid, return 400 
-    const requiredFields = ["name", "categories", "ingredients", "directions"];
-    const missingField = requiredFields.find(field => !(field in req.body));
-    console.log(missingField)
-    if (!missingField) {
-        res.status(400).json({
-            message: `Required \`${missingField}\` missing.`
-        });
-        return;
-    }
-    console.log(req.body);
+    const toUpdate = {};
+    const updateableFields = ["name", "categories", "ingredients", "directions"];
+    
+    updateableFields.forEach(field => {
+        if (field in req.body) {
+            toUpdate[field] = req.body[field]
+        }
+    });
 
-    // update course 
-    user.firstName = req.body.firstName,
-    user.lastName = req.body.lastName, 
-    user.username = req.body.username,
-    user.password = req.body.password
-
-    // return the updated course
-    res.send(user);
+    User
+        .findByIdAndUpdate(req.params.id, {set: toUpdate})
+        .then(updateUser => res.status(200).json({
+            id: updateUser.id,
+            firstName: updateUser.firstName,
+            lastName: updateUser.lastName, 
+            username: updateUser.username,
+            password: updateUser.password
+        }))
+        .catch(err => res.status(500).json({ message: "Internal server error"}));
 })
 
 router.delete('/:id', (req, res) => {
-    // look up course
-    // if it doesn't exist, return 404
-    const user = users.find(user => user.id === parseInt(req.params.id));
-    if(!user) {
-        res.status(404).send('The user was not found');
-        return;
-    }
-
-    // delete
-    const index = users.indexOf(user);
-    users.splice(index, 1)
-    // return the same course 
-    res.send(user);
+    User
+        .findById(req.params.id)
+        .then(user => res.status(204).end())
+        .catch(err => res.status(500).json({ message: "Internal server error"}));
 })
 
 
