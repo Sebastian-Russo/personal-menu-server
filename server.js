@@ -42,9 +42,10 @@ app.use('/api/auth/', authRouter);
 
 const jwtAuth = passport.authenticate('jwt', { session: false });
 
-app.use('*', (req, res) => {
-    return res.status(404).json({ message: 'Not Found' });
-  });
+// this prevents jwtAuth below from working 
+// app.use('/', (req, res) => {
+//     return res.status(404).json({ message: 'Not Found' });
+//   });
 
 // A protected endpoint which needs a valid JWT to access it
 app.get('/api/protected', jwtAuth, (req, res) => {
