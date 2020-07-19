@@ -55,12 +55,50 @@ app.get('/api/protected', jwtAuth, (req, res) => {
 });
 
 
-mongoose.connect(DATABASE_URL);
+// mongoose.connect(DATABASE_URL);
 // mongoose.connect(
 //   "mongodb+srv://SebastianRusso:Requiem12@my-first-atlas-db-csng6.mongodb.net/<dbname>?retryWrites=true&w=majority",
 //   () => console.log('connected to database!'));
 
 
-app.listen(PORT, () => console.log(`Listening on ${PORT}`));
+let server;
 
-module.exports = {app}
+function runServer(databaseUrl, port = PORT) {
+
+  return new Promise((resolve, reject) => {
+    mongoose.connect(databaseUrl, err => {
+      if (err) {
+        return reject(err);
+      }
+      server = app.listen(port, () => {
+        console.log(`Your app is listening on port ${port}`);
+        resolve();
+      })
+        .on('error', err => {
+          mongoose.disconnect();
+          reject(err);
+        });
+    });
+  });
+}
+  
+function closeServer() {
+  return mongoose.disconnect().then(() => {
+    return new Promise((resolve, reject) => {
+      console.log('Closing server');
+      server.close(err => {
+        if (err) {
+          return reject(err);
+        }
+        resolve();
+      });
+    });
+  });
+}
+
+if (require.main === module) {
+  runServer(DATABASE_URL).catch(err => console.error(err));
+}
+
+module.exports = { app, runServer, closeServer };
+  
