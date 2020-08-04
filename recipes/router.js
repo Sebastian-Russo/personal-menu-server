@@ -22,16 +22,13 @@ router.get('/', (req, res) => {
 router.get('/:id', (req, res) => {
     console.log(req.params.id)
     Recipe
-        .findById(req.params.id)
-        .then(recipe => {
-            console.log('retrived recipe', recipe)
-            res.json({
-                id: recipe.name,
-                name: recipe.name,
-                categories: recipe.categories, 
-                ingredients: recipe.ingredients,
-                directions: recipe.directions
-            });
+        .find({'userId':req.params.id}) // find all recipes where user id is gunna be the id from the request... use the user id to find all the recipes that have the same user id
+        .then(recipes => {
+            console.log('retrived recipes', recipes) 
+            const response = recipes.map(recipe => { // grabbed all the recipes, seralize each one, and back as an array of recipes/objs to user
+                return recipe.serialize();
+            })
+            res.json(response);
         })
         .catch(err => {
             console.error(err);
@@ -56,7 +53,8 @@ router.post('/', (req, res) => {
         name: req.body.name,
         categories: req.body.categories, 
         ingredients: req.body.ingredients,
-        directions: req.body.directions
+        directions: req.body.directions,
+        userId: req.body.userId // need to add userId when creating new recipe, so this recipe is linked to the user id with all the user's other recipes 
     })
     .then(recipe => {
         console.log(recipe)
@@ -89,7 +87,7 @@ router.put('/:id', (req, res) => {
     Recipe
         .findByIdAndUpdate(req.params.id, {set: toUpdate})
         .then(updateRecipe => res.status(200).json({
-                id: updateRecipe.id,
+                id: updateRecipe.id, // connects recipe to user 
                 name: updateRecipe.name,
                 categories: updateRecipe.categories, 
                 ingredients: updateRecipe.ingredients,
@@ -108,5 +106,5 @@ router.delete('/:id', (req, res) => {
 })
 
 
-module.exports = router; 
+module.exports = {router}; 
 

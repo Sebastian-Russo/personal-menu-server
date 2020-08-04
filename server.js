@@ -6,8 +6,8 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 const bodyParser = require('body-parser');
 
-const recipeRouter = require("./recipes/router");
-const usersRouter = require("./users/router");
+const { router: recipeRouter } = require("./recipes");
+const { router: usersRouter } = require("./users");
 const { router: authRouter, localStrategy, jwtStrategy } = require('./auth');
 
 mongoose.Promise = global.Promise; // still needed in mogoose v5?

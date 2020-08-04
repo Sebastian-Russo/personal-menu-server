@@ -4,7 +4,7 @@
   "description": "personal-menu-and-recipe-book-server",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --exit",
+    "test": "mocha --exit || true",
     "start": "nodemon server.js"
   },
   "repository": {

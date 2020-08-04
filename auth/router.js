@@ -19,8 +19,13 @@ const localAuth = passport.authenticate('local', {session: false});
 router.use(bodyParser.json());
 // The user provides a username and password to login
 router.post('/login', localAuth, (req, res) => {
-  const authToken = createAuthToken(req.user.serialize());
-  res.json({authToken});
+  const userObj = req.user.serialize()
+  const authToken = createAuthToken(userObj);
+  res.json({ // send back to front end when user logs in (action obj in response to user login)
+    authToken,
+    userId: userObj.id, // send back user id match with all recipe id's
+    username: userObj.username 
+  });
 });
 
 const jwtAuth = passport.authenticate('jwt', {session: false});
