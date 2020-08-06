@@ -68,7 +68,7 @@ router.post('/', (req, res) => {
 
 
 router.put('/:id', (req, res) => {
-    console.log(req.params, req.body.id)
+    console.log('here', req.params, req.body)
     if(!(req.params.id && req.body.id && req.params.id == req.body.id)) {
         const message = (`Request path id (${req.params.id}) and request body id (${req.body.id}) must match`)
         console.error(message);
@@ -85,17 +85,18 @@ router.put('/:id', (req, res) => {
     });
 
     Recipe
-        .findByIdAndUpdate(req.params.id, {set: toUpdate})
-        .then(updateRecipe => res.status(200).json({
+        .findByIdAndUpdate(req.params.id, {$set: toUpdate}, {new: true})
+        .then(updateRecipe => {
+            res.status(200).json({
                 id: updateRecipe.id, // connects recipe to user 
                 name: updateRecipe.name,
                 categories: updateRecipe.categories, 
                 ingredients: updateRecipe.ingredients,
                 directions: updateRecipe.directions
-        }))
+            })
+        })
         .catch(err => res.status(500).json({ message: 'Internal server error'}));
 })
-
 
 
 router.delete('/:id', (req, res) => {

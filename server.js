@@ -6,8 +6,9 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 const bodyParser = require('body-parser');
 
-const { router: recipeRouter } = require("./recipes");
-const { router: usersRouter } = require("./users");
+const { router: recipeRouter } = require('./recipes');
+const { router: usersRouter } = require('./users');
+const { router: groceryRouter } = require('./groceries');
 const { router: authRouter, localStrategy, jwtStrategy } = require('./auth');
 
 mongoose.Promise = global.Promise; // still needed in mogoose v5?
@@ -27,7 +28,7 @@ app.use(function (req, res, next) {
   res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization');
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE');
   if (req.method === 'OPTIONS') {
-    return res.send(204);
+    return res.sendStatus(204);
   }
   next();
 });
@@ -38,6 +39,7 @@ passport.use(jwtStrategy);
 // treat like middle ware, use the recipes.js file to handle endpoints that start wtih /api/recipes
 app.use('/api/recipes', recipeRouter);
 app.use('/api/users/', usersRouter);
+// app.use('/api/grocery-list', groceryRouter);
 app.use('/api/auth/', authRouter);
 
 const jwtAuth = passport.authenticate('jwt', { session: false });
