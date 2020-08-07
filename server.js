@@ -39,7 +39,6 @@ passport.use(jwtStrategy);
 // treat like middle ware, use the recipes.js file to handle endpoints that start wtih /api/recipes
 app.use('/api/recipes', recipeRouter);
 app.use('/api/users/', usersRouter);
-// app.use('/api/grocery-list', groceryRouter);
 app.use('/api/auth/', authRouter);
 
 const jwtAuth = passport.authenticate('jwt', { session: false });

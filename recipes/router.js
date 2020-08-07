@@ -64,7 +64,7 @@ router.post('/', (req, res) => {
         console.error(err);
         res.status(500).json({ message: "Internal server error" });
     });
-})
+});
 
 
 router.put('/:id', (req, res) => {
@@ -96,7 +96,7 @@ router.put('/:id', (req, res) => {
             })
         })
         .catch(err => res.status(500).json({ message: 'Internal server error'}));
-})
+});
 
 
 router.delete('/:id', (req, res) => {
@@ -104,7 +104,7 @@ router.delete('/:id', (req, res) => {
         .findByIdAndRemove(req.params.id)
         .then(recipe => res.status(204).end())
         .catch(err => res.status(500).json({ message: "Internal server error" }));
-})
+});
 
 
 module.exports = {router}; 

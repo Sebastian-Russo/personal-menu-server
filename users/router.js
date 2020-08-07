@@ -121,6 +121,38 @@ router.post('/', (req, res) => {
       });
 });
 
+
+
+
+// update grocery list connected to user id 
+router.put('/:id', (req, res) => {
+  console.log('grocery list here', req.params, req.body, req.body.id)
+  if(!(req.params.id && req.body.id && req.params.id == req.body.id)) {
+      const message = (`Request path id (${req.params.id}) and request body id (${req.body.id}) must match`)
+      console.error(message);
+      return res.status(400).json({message: message})
+  }
+
+  const toUpdate = {};
+  const updateableFields = ["groceryList"];
+
+  updateableFields.forEach(field => {
+      if (field in req.body) {
+          toUpdate[field] = req.body[field]
+      }
+  });
+
+  User
+      .findByIdAndUpdate(req.params.id, {$set: toUpdate}, {new: true})
+      .then(updateUser => {
+          res.status(200).json({
+              groceryList: updateUser.groceryList
+          })
+      })
+      .catch(err => res.status(500).json({ message: 'Internal server error'}));
+});
+
+
 // REMOVE DURING PRODUCT, JUST TO CHECK IF CREATING USERS
 router.get('/', (req, res) => {
     return User.find()

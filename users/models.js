@@ -16,7 +16,8 @@ const UserSchema = mongoose.Schema({
     required: true
   },
   firstName: {type: String, default: ''},
-  lastName: {type: String, default: ''}
+  lastName: {type: String, default: ''},
+  groceryList: {type: Array, required: true}
 });
 
 UserSchema.methods.serialize = function() {
@@ -24,7 +25,8 @@ UserSchema.methods.serialize = function() {
     id: this._id || '',
     username: this.username || '',
     firstName: this.firstName || '',
-    lastName: this.lastName || ''
+    lastName: this.lastName || '',
+    groceryList: this.groceryList
   };
 };
 
