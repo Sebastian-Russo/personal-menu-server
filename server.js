@@ -8,7 +8,6 @@ const bodyParser = require('body-parser');
 
 const { router: recipeRouter } = require('./recipes');
 const { router: usersRouter } = require('./users');
-const { router: groceryRouter } = require('./groceries');
 const { router: authRouter, localStrategy, jwtStrategy } = require('./auth');
 
 mongoose.Promise = global.Promise; // still needed in mogoose v5?
