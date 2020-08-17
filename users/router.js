@@ -134,7 +134,7 @@ router.put('/:id', (req, res) => {
   }
 
   const toUpdate = {};
-  const updateableFields = ["groceryList"];
+  const updateableFields = ["groceryList", "categoryList"];
 
   updateableFields.forEach(field => {
       if (field in req.body) {
@@ -146,7 +146,8 @@ router.put('/:id', (req, res) => {
       .findByIdAndUpdate(req.params.id, {$set: toUpdate}, {new: true})
       .then(updateUser => {
           res.status(200).json({
-              groceryList: updateUser.groceryList
+              groceryList: updateUser.groceryList,
+              categoryList: updateUser.categoryList
           })
       })
       .catch(err => res.status(500).json({ message: 'Internal server error'}));
