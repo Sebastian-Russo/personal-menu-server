@@ -185,6 +185,7 @@
 //           expect(res.body.location).to.equal("lastName");
 //         });
 //     });
+
 //     it("Should reject users with non-trimmed username", function() {
 //       return chai
 //         .request(app)
