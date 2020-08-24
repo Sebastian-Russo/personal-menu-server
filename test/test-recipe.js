@@ -21,7 +21,8 @@ chai.use(chaiHttp);
 describe('/api/recipe', function() {
 
     let authToken;
-    let recipeID;
+    let userId;
+    let recipeId;
 
     // generate an object representing a recipe
     // can be used to generate seed data for db, or req.body data 
@@ -39,17 +40,17 @@ describe('/api/recipe', function() {
         console.info('creating mock user');
         return chai.request(app)
             .post('/api/users/')
-            .send({username: 'username', password: 'password', email: 'email@gamil.com'})
+            .send({username: 'username', password: 'password'})
             .then(res => seedRecipeData(res.body.id))
             .then(() => logUserIn())
             .catch(err => console.log(err))
     }
 
-    function seedRecipeData(parentID) { // what's 'parentID'?
+    function seedRecipeData(userId) { 
         console.info('seeding recipe data');
         return Recipe.create(recipeData)
             .then(recipe => {
-                recipe._parent = parentID; // ??
+                recipe._userId = userId; 
                 return chai.request(app)
                     .post('/api/recipe')
                     .send(recipe)
@@ -65,6 +66,9 @@ describe('/api/recipe', function() {
             .post('/api/auth/login')
             .send({username: 'username', password: 'password'})
             .then(res => authToken = res.body.authToken)
+            .then(res => {
+                userId = res.body.userId
+            })
             .catch(err => console.log(err))
     }
 
@@ -129,14 +133,14 @@ describe('/api/recipe', function() {
                     expect(res).to.have.status(200);
                     expect(res.body).to.be.a('array');
                     expect(res).to.be.json;
-                    const expectedKeys = ['userId', 'name', 'categories', 'ingredients', 'directions'];
+                    const expectedKeys = ['_userId', 'id', 'name', 'categories', 'ingredients', 'directions'];
                     expect(res.body[0]).to.have.keys(expectedKeys)
                     const resRecipe = res.body[0];
                     return Recipe.findById(resRecipe.id).exec()
                 })
                 .then(recipe => {
                     const resRecipe = _res.body[0];
-                    expect(resRecipe._parent).to.deep.equal(`${recipe._parent}`);
+                    expect(resRecipe._userId).to.deep.equal(`${userId}`) // check userId?
                     expect(resRecipe.id).to.deep.equal(recipe.id);
                     expect(resRecipe.name).to.deep.equal(recipe.name);
                     expect(resRecipe.directions).to.deep.equal(recipe.directions);
@@ -154,14 +158,14 @@ describe('/api/recipe', function() {
                 .then(res => {
                     _res = res;
                     expect(res.body).to.be.json;
-                    const expectedKeys = ['userId', 'name', 'categories', 'ingredients', 'directions'];
+                    const expectedKeys = ['userId', 'id', 'name', 'categories', 'ingredients', 'directions'];
                     expect(res.body).to.have.keys(expectedKeys);
                     const resRecipe = res.body;
                     return Recipe.findById(resRecipe.id).exec()
                 })
                 .then(recipe => {
                     const resRecipe = _res.body;
-                    expect(resRecipe._parent).to.deep.equal(`${article._parent}`);
+                    expect(resRecipe._userId).to.deep.equal(`${recipe._userId}`); // check userId?
                     expect(resRecipe.id).to.deep.equal(recipe.id);
                     expect(resRecipe.name).to.deep.equal(recipe.name);
                     expect(resRecipe.directions).to.deep.equal(recipe.directions);
