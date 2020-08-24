@@ -99,27 +99,86 @@ describe('/api/recipe', function() {
 
         // seeds db with test data
         beforeEach(() => () => {
-            return seedRecipeData();
+            return createMockUser();
         })
 
-        it('should list all the recipes on ', function() {
+        it('Should reject unauthorized requests', ()=> {
+            return chai.request(app)
+                .get('/api/recipes')
+                .set('Authorization', 'Bearer IamAuthorized')
+                .then(() => 
+                    expect.fail(null, null, 'Request should not succeed'))
+                .catch(err => {
+                    if (err instanceof chai.AssertionError) {
+                        throw err;
+                    }
+                    const res = err.response;
+                    expect(res).to.have.status(401);
+                    expect(res.test).to.equal('Unauthorized')
+                });
+        })
+
+        // grab all recipes for user 
+        it('Should return user recipes on root request', () => {
+            let _res;
             return chai.request(app)
                 .get('api/recipes')
-                .then(function(res) {
+                .set('Authorization', `Bearer ${authToken}`)
+                .then(res => {
+                    _res = res;
                     expect(res).to.have.status(200);
-                    expect(res).to.be.json;
                     expect(res.body).to.be.a('array');
-                    expect(res.body.length).to.be.at.least(1);
-                    
+                    expect(res).to.be.json;
                     const expectedKeys = ['userId', 'name', 'categories', 'ingredients', 'directions'];
-                    res.body.forEach(function(item) {
-                        expect(item).to.be.a('object');
-                        expect(item).to.include.keys(expectedKeys)
-                    });
-                });
+                    expect(res.body[0]).to.have.keys(expectedKeys)
+                    const resRecipe = res.body[0];
+                    return Recipe.findById(resRecipe.id).exec()
+                })
+                .then(recipe => {
+                    const resRecipe = _res.body[0];
+                    expect(resRecipe._parent).to.deep.equal(`${recipe._parent}`);
+                    expect(resRecipe.id).to.deep.equal(recipe.id);
+                    expect(resRecipe.name).to.deep.equal(recipe.name);
+                    expect(resRecipe.directions).to.deep.equal(recipe.directions);
+                    expect(resRecipe.categories).to.be.a('array');
+                    expect(resRecipe.ingredients).to.be.a('object');
+                    // do categories/ingredients need more assersions?
+                })
         });
     
+        it('Should return a specific recipe on GET by id', () => {
+            let _res;
+            return chai.request(app)
+                .get(`/api/recipes/${userID}`) // not sure where userID from
+                .set('Authorization', `Bearer ${authToken}`)
+                .then(res => {
+                    _res = res;
+                    expect(res.body).to.be.json;
+                    const expectedKeys = ['userId', 'name', 'categories', 'ingredients', 'directions'];
+                    expect(res.body).to.have.keys(expectedKeys);
+                    const resRecipe = res.body;
+                    return Recipe.findById(resRecipe.id).exec()
+                })
+                .then(recipe => {
+                    const resRecipe = _res.body;
+                    expect(resRecipe._parent).to.deep.equal(`${article._parent}`);
+                    expect(resRecipe.id).to.deep.equal(recipe.id);
+                    expect(resRecipe.name).to.deep.equal(recipe.name);
+                    expect(resRecipe.directions).to.deep.equal(recipe.directions);
+                    expect(resRecipe.categories).to.be.a('array');
+                    expect(resRecipe.ingredients).to.be.a('object');
+                    // do categories/ingredients need more assersions?
+                })
+        })
     })
 
+
+
+
+
+    // describe('POST requests', () => {
+        
+    //     it('Should')
+    // })
 
 })
