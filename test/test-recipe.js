@@ -47,7 +47,6 @@ describe('/api/recipes', function() {
                 groceryList: [],
                 categoryList: []
             })
-            .then(res => seedRecipeData(res.body.id))
             .then(() => logUserIn())
             .catch(err => console.log(err))
     }
@@ -59,6 +58,7 @@ describe('/api/recipes', function() {
                 recipe.userId = userId; 
                 return chai.request(app)
                     .post('/api/recipes')
+                    .set('Authorization', `Bearer ${authToken}`)
                     .send(recipe)
                     .then(res => recipeID = res.body.id)
                     .catch(err => console.log(err))
@@ -75,6 +75,7 @@ describe('/api/recipes', function() {
                 authToken = res.body.authToken,
                 userId = res.body.userId
             })
+            .then(res => seedRecipeData(res.body.id))
             .catch(err => console.log(err))
     }
 
@@ -117,10 +118,10 @@ describe('/api/recipes', function() {
                 .get('/api/recipes')
                 .set('Authorization', 'Bearer IamAuthorized')
                 .then(() => 
-                    expect.fail( null, null, 'Request should not succeed')) // .fail(actual, expected, [message], [operator])
+                    expect.fail(null, null, 'Request should not succeed')) // .fail(actual, expected, [message], [operator])
                 .catch(err => {
                     console.log('initial error', err)
-                    if (err instanceof chai.AssertionError) { // what's this for?
+                    if (!err instanceof chai.AssertionError) { // what's this for?
                         throw err;
                     }
                     const res = err.response;
