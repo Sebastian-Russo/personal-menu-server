@@ -58,7 +58,7 @@ describe('/api/recipes', function() {
             .then(recipe => {
                 recipe.userId = userId; 
                 return chai.request(app)
-                    .post('/api/recipe')
+                    .post('/api/recipes')
                     .send(recipe)
                     .then(res => recipeID = res.body.id)
                     .catch(err => console.log(err))
@@ -117,9 +117,9 @@ describe('/api/recipes', function() {
                 .get('/api/recipes')
                 .set('Authorization', 'Bearer IamAuthorized')
                 .then(() => 
-                    expect.fail(null, null, 'Request should not succeed'))
+                    expect.fail('Request should not succeed')) // what are first two args: 'null, null' for?
                 .catch(err => {
-                    if (err instanceof chai.AssertionError) {
+                    if (err instanceof chai.AssertionError) { // what's this for?
                         throw err;
                     }
                     const res = err.response;
@@ -133,7 +133,7 @@ describe('/api/recipes', function() {
             let _res;
             return chai.request(app)
                 .get('/api/recipes')
-                .set('Authorization', `Bearer ${authToken}`)
+                .set('Authorization', `Bearer ${authToken}`) // set for header?
                 .then(res => {
                     _res = res;
                     expect(res).to.have.status(200);
@@ -142,7 +142,7 @@ describe('/api/recipes', function() {
                     const expectedKeys = ['userId', 'id', 'name', 'categories', 'ingredients', 'directions'];
                     expect(res.body[0]).to.have.keys(expectedKeys)
                     const resRecipe = res.body[0];
-                    return Recipe.findById(resRecipe.id).exec()
+                    return Recipe.findById(resRecipe.id).exec() // exce() ?
                 })
                 .then(recipe => {
                     const resRecipe = _res.body[0];
@@ -151,7 +151,7 @@ describe('/api/recipes', function() {
                     expect(resRecipe.name).to.deep.equal(recipe.name);
                     expect(resRecipe.directions).to.deep.equal(recipe.directions);
                     expect(resRecipe.categories).to.be.a('array');
-                    expect(resRecipe.ingredients).to.be.a('object');
+                    expect(resRecipe.ingredients).to.be.a('array');
                     // do categories/ingredients need more assersions?
                 })
         });

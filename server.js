@@ -8,7 +8,7 @@ const bodyParser = require('body-parser');
 
 const { router: recipeRouter } = require('./recipes');
 const { router: usersRouter } = require('./users');
-const { router: authRouter, localStrategy, jwtStrategy } = require('./auth');
+const { router: authRouter, localStrategy, jwtStrategy, jwtAuth } = require('./auth');
 
 mongoose.Promise = global.Promise; // still needed in mogoose v5?
 
@@ -36,23 +36,16 @@ passport.use(localStrategy);
 passport.use(jwtStrategy);
 
 // treat like middle ware, use the recipes.js file to handle endpoints that start wtih /api/recipes
-app.use('/api/recipes', recipeRouter);
+// jwtAuth middleware to protected endpoints 
+app.use('/api/recipes', jwtAuth, recipeRouter);
 app.use('/api/users/', usersRouter);
 app.use('/api/auth/', authRouter);
 
-const jwtAuth = passport.authenticate('jwt', { session: false });
 
 // this prevents jwtAuth below from working 
 app.use('/', (req, res) => {
     return res.status(404).json({ message: 'Not Found' });
   });
-
-// A protected endpoint which needs a valid JWT to access it
-app.get('/api/protected', jwtAuth, (req, res) => {
-  return res.json({
-    data: 'hello world'
-  });
-});
 
 
 // mongoose.connect(DATABASE_URL);

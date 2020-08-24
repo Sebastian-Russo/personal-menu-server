@@ -1,7 +1,9 @@
 'use strict';
 const express = require("express");
 const { User } = require('./models');
+const { jwtAuth } = require('../auth');
 const router = express.Router();
+
 
 router.post('/', (req, res) => {
     const requiredFields = ['username', 'password'];
@@ -125,7 +127,7 @@ router.post('/', (req, res) => {
 
 
 // update grocery list connected to user id 
-router.put('/:id', (req, res) => {
+router.put('/:id', jwtAuth, (req, res) => {
   console.log('grocery list here', req.params, req.body, req.body.id)
   if(!(req.params.id && req.body.id && req.params.id == req.body.id)) {
       const message = (`Request path id (${req.params.id}) and request body id (${req.body.id}) must match`)
