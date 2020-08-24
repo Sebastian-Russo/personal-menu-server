@@ -70,12 +70,12 @@ describe('/api/recipes', function() {
         console.info('loggin in')
         return chai.request(app)
             .post('/api/auth/login')
-            .send({username: 'username', password: 'password'})
+            .send({username: 'username', password: 'password12'})
             .then(res => {
                 authToken = res.body.authToken,
-                userId = res.body.userId
+                userId = res.body.userObj.id,
+                seedRecipeData(userId)
             })
-            .then(res => seedRecipeData(res.body.id))
             .catch(err => console.log(err))
     }
 
