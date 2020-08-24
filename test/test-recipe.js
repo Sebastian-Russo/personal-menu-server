@@ -117,12 +117,14 @@ describe('/api/recipes', function() {
                 .get('/api/recipes')
                 .set('Authorization', 'Bearer IamAuthorized')
                 .then(() => 
-                    expect.fail('Request should not succeed')) // what are first two args: 'null, null' for?
+                    expect.fail( null, null, 'Request should not succeed')) // .fail(actual, expected, [message], [operator])
                 .catch(err => {
+                    console.log('initial error', err)
                     if (err instanceof chai.AssertionError) { // what's this for?
                         throw err;
                     }
                     const res = err.response;
+                    console.log('error res is',res)
                     expect(res).to.have.status(401);
                     expect(res.test).to.equal('Unauthorized')
                 });
