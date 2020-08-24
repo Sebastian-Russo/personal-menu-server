@@ -1,9 +1,11 @@
 const chai = require('chai'); 
 const chaiHttp = require('chai-http');
 
-const {app} = require('../server');
+const {app, closeServer, runServer} = require('../server');
 
 const should = chai.should();
+const expect = chai.expect; 
+
 chai.use(chaiHttp);
 
 describe('API', function() {
@@ -17,4 +19,4 @@ describe('API', function() {
         });
     });
 });
- 
+
