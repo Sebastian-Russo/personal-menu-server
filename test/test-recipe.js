@@ -18,21 +18,20 @@ chai.use(chaiHttp);
 
 
 // describe holds all the it functions 
-describe('/api/recipe', function() {
+describe('/api/recipes', function() {
 
     let authToken;
     let userId;
-    let recipeId;
 
     // generate an object representing a recipe
     // can be used to generate seed data for db, or req.body data 
     const recipeData = {
         name: faker.lorem.word,
         categories: [ faker.lorem.word, faker.lorem.word, faker.lorem.word ],
-        ingredients: {
+        ingredients: [{
             ingredient: faker.lorem.word,
             amount: faker.lorem.word
-        },
+        }],
         directions: faker.lorem.words
     }
 
@@ -40,7 +39,14 @@ describe('/api/recipe', function() {
         console.info('creating mock user');
         return chai.request(app)
             .post('/api/users/')
-            .send({username: 'username', password: 'password'})
+            .send({
+                username: 'username', 
+                password: 'password12',
+                firstName: 'firstName',
+                lastName: 'lastName',
+                groceryList: [],
+                categoryList: []
+            })
             .then(res => seedRecipeData(res.body.id))
             .then(() => logUserIn())
             .catch(err => console.log(err))
@@ -50,7 +56,7 @@ describe('/api/recipe', function() {
         console.info('seeding recipe data');
         return Recipe.create(recipeData)
             .then(recipe => {
-                recipe._userId = userId; 
+                recipe.userId = userId; 
                 return chai.request(app)
                     .post('/api/recipe')
                     .send(recipe)
@@ -65,8 +71,8 @@ describe('/api/recipe', function() {
         return chai.request(app)
             .post('/api/auth/login')
             .send({username: 'username', password: 'password'})
-            .then(res => authToken = res.body.authToken)
             .then(res => {
+                authToken = res.body.authToken,
                 userId = res.body.userId
             })
             .catch(err => console.log(err))
@@ -106,7 +112,7 @@ describe('/api/recipe', function() {
             return createMockUser();
         })
 
-        it('Should reject unauthorized requests', ()=> {
+        it('Should reject unauthorized requests', () => {
             return chai.request(app)
                 .get('/api/recipes')
                 .set('Authorization', 'Bearer IamAuthorized')
@@ -126,21 +132,21 @@ describe('/api/recipe', function() {
         it('Should return user recipes on root request', () => {
             let _res;
             return chai.request(app)
-                .get('api/recipes')
+                .get('/api/recipes')
                 .set('Authorization', `Bearer ${authToken}`)
                 .then(res => {
                     _res = res;
                     expect(res).to.have.status(200);
                     expect(res.body).to.be.a('array');
                     expect(res).to.be.json;
-                    const expectedKeys = ['_userId', 'id', 'name', 'categories', 'ingredients', 'directions'];
+                    const expectedKeys = ['userId', 'id', 'name', 'categories', 'ingredients', 'directions'];
                     expect(res.body[0]).to.have.keys(expectedKeys)
                     const resRecipe = res.body[0];
                     return Recipe.findById(resRecipe.id).exec()
                 })
                 .then(recipe => {
                     const resRecipe = _res.body[0];
-                    expect(resRecipe._userId).to.deep.equal(`${userId}`) // check userId?
+                    expect(resRecipe.userId).to.deep.equal(`${userId}`) // check userId?
                     expect(resRecipe.id).to.deep.equal(recipe.id);
                     expect(resRecipe.name).to.deep.equal(recipe.name);
                     expect(resRecipe.directions).to.deep.equal(recipe.directions);
@@ -153,7 +159,7 @@ describe('/api/recipe', function() {
         it('Should return a specific recipe on GET by id', () => {
             let _res;
             return chai.request(app)
-                .get(`/api/recipes/${userID}`) // not sure where userID from
+                .get(`/api/recipes/${userId}`) // not sure where userID from
                 .set('Authorization', `Bearer ${authToken}`)
                 .then(res => {
                     _res = res;
@@ -165,12 +171,12 @@ describe('/api/recipe', function() {
                 })
                 .then(recipe => {
                     const resRecipe = _res.body;
-                    expect(resRecipe._userId).to.deep.equal(`${recipe._userId}`); // check userId?
+                    expect(resRecipe.userId).to.deep.equal(`${recipe.userId}`); // check userId?
                     expect(resRecipe.id).to.deep.equal(recipe.id);
                     expect(resRecipe.name).to.deep.equal(recipe.name);
                     expect(resRecipe.directions).to.deep.equal(recipe.directions);
                     expect(resRecipe.categories).to.be.a('array');
-                    expect(resRecipe.ingredients).to.be.a('object');
+                    expect(resRecipe.ingredients).to.be.a('array');
                     // do categories/ingredients need more assersions?
                 })
         })
