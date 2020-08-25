@@ -194,6 +194,23 @@ describe('/api/recipes', function() {
             return createMockUser();
         })
 
+        it('Should reject recipes with missing fields', () => {
+            return chai.request(app)
+            .post(`/api/recipes/${userId}`)
+            .set('Authorization', `Bearer ${authToken}`)
+            .send({name: 'name', directions: 'directions'})
+            .then(() => {
+                return expect.fail(null, null, 'Request should not succeed')
+            })
+            .catch(err => {
+                if (err instanceof chai.AssertionError) {
+                    throw err;
+                }
+                const res = err.response;
+                expect(res).to.have.status(500);
+            })
+        })
+
         it('Should create new recipe, linked to user', () => {
             let _res;
             Recipe.create(recipeData)
