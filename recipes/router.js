@@ -15,7 +15,7 @@ router.get('/', (req, res) => {
         })
         .catch(err => {
             console.error(err)
-            res.status(500).json({ message: "Internal server error"});
+            res.status(500).json({ message: err.message });
         });
 });
 
@@ -32,7 +32,7 @@ router.get('/:id', (req, res) => {
         })
         .catch(err => {
             console.error(err);
-            res.status(500).json({ message: "Internal server error" });
+            res.status(500).json({ message: err.message });
         });
 });
 
@@ -62,7 +62,7 @@ router.post('/', (req, res) => {
     })
     .catch(err => {
         console.error(err);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: err.message });
     });
 });
 
@@ -85,9 +85,22 @@ router.put('/:id', (req, res) => {
     });
 
     Recipe
-        .findByIdAndUpdate(req.params.id, {$set: toUpdate}, {new: true})
+        // .findByIdAndUpdate(
+            .findOneAndUpdate(
+            {_id: req.params.id, 
+            {$set: toUpdate}, 
+            {new: true},
+        //     (err, recipe) => {
+        //         if (err) {
+        //             console.error(err)
+        //         } else {
+        //             return recipe
+        //         }
+        //     }
+        )
         .then(updateRecipe => {
-            res.status(200).json({
+            console.log('UPDATE RECIPE', updateRecipe)
+            res.status(204).json({
                 id: updateRecipe.id, // connects recipe to user 
                 name: updateRecipe.name,
                 categories: updateRecipe.categories, 
@@ -95,7 +108,7 @@ router.put('/:id', (req, res) => {
                 directions: updateRecipe.directions
             })
         })
-        .catch(err => res.status(500).json({ message: 'Internal server error'}));
+        .catch(err => res.status(500).json({ message: err.message }));
 });
 
 
@@ -103,7 +116,7 @@ router.delete('/:id', (req, res) => {
     Recipe
         .findByIdAndRemove(req.params.id)
         .then(recipe => res.status(204).end())
-        .catch(err => res.status(500).json({ message: "Internal server error" }));
+        .catch(err => res.status(500).json({ message: err.message }));
 });
 
 
