@@ -227,34 +227,92 @@ describe('/api/recipes', function() {
     })
 
 
-    // describe('PUT endpoint', () => {
+    describe('PUT endpoint', () => {
 
-    //     beforeEach(() => {
-    //         return createMockUser();
-    //     })
+        beforeEach(() => {
+            return createMockUser();
+        })
 
-    //     it('Should reject unauthorized requests', () => {
-    //         return chai.request(app)
-    //             .put(`/api/recipes/${userId}`)
-    //             .set('Authorization', `Bearer ${authToken}`)
-    //             .then(() => {
-    //                 return expect.fail(null, null, 'Request should not succeed')
-    //             })
-    //             .catch(err => {
-    //                 if (err instanceof chai.AssertionError) {
-    //                     throw err;
-    //                 }
-    //                 const res = err.response;
-    //                 expect(res).to.have.status(401);
-    //                 expect(res.text).to.equal('Unauthorized')
-    //             })
-    //     })
-    // })
+        it('Should reject unauthorized requests', () => {
+            return chai.request(app)
+                .put(`/api/recipes/${userId}`)
+                .set('Authorization', `Bearer ${authToken}`)
+                .then(() => {
+                    return expect.fail(null, null, 'Request should not succeed')
+                })
+                .catch(err => {
+                    if (err instanceof chai.AssertionError) {
+                        throw err;
+                    }
+                    const res = err.response;
+                    expect(res).to.have.status(401);
+                    expect(res.text).to.equal('Unauthorized')
+                })
+        })
+
+        it('Should update the correct recipe by id', () => {
+            const updatedRecipe = {
+                'id': userId,
+                'name': 'New Name',
+                'directions': 'New directions',
+                'categories': ['new cat', 'new cat', 'new cat'],
+                'ingredients': [ {
+                    'ingredient': 'new ingredient',
+                    'amount': 'new amount'
+                }]
+            }
+            let _res;
+            return chai.request(app)
+                .put(`/api/recipes/${userId}`)
+                .set('Authorization', `Bearer ${authToken}`)
+                .send(updatedRecipe)
+                .then(res => { // test payload
+                    expect(res).to.have.status(204);
+                    return Recipe.findById(userId).exec()
+                })
+                .then(recipe => {
+                    expect(recipe.name).to.deep.equal('New Name');
+                    expect(recipe.directions).to.deep.equal('New directions');
+                    expect(recipe.categories).to.deep.equal(['new cat', 'new cat', 'new cat']);
+                    expect(recipe.ingredients).to.deep.equal([ {
+                        'ingredient': 'new ingredient',
+                        'amount': 'new amount'
+                    }])
+                })
+        })
+    })
 
 
+    describe('DELETE endpoint', () => {
 
-// Should update specific recipe from user
+        beforeEach(() => {
+            return createMockUser();
+        })
+
+        it('Should reject unauthorized requests', () => {
+            return chai.request(app)
+                .delete(`/api/recipes/${userId}`)
+                .then(() => {
+                    return expect.fail(null, null, 'Request should not succeed')
+                })
+                .catch(err => {
+                    if (err instanceof chai.AssertionError) {
+                        throw err;
+                    }
+                    const res = err.response;
+                    expect(res).to.have.status(401);
+                    expect(res.text).to.equal('Unauthorized')
+                })
+        })
+
+        it('Should delete the correct recipe by id', () => {
+            return chai.request(app)
+                .delete(`/api/recipes/${userId}`)
+                .set('Authorization', `Bearer ${authToken}`)
+                .then(res => {
+                    expect(res).to.have.status(204)
+                })
+        })
+    })
+
 })
-
-
-// delete, should delete recipe from user 
