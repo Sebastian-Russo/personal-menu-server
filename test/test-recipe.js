@@ -9,12 +9,13 @@ const { TEST_DATABASE_URL } = require("../config");
 // import server.js and use destructuring assignment to create variables for app, runServer, closeServer
 const { app, runServer, closeServer } = require("../server"); 
 const { Recipe } = require('../recipes/models');
-const { User } = require('../users')
+const { User } = require('../users');
+const recipes = require('../recipes');
 
 const expect = chai.expect; // declare a variable for expect from chai import 
 const should = chai.should; 
 
-chai.use(chaiHttp);
+chai.use(chaiHttp); // chai.request()
 
 
 // describe holds all the it functions 
@@ -23,18 +24,18 @@ describe('/api/recipes', function() {
     let authToken;
     let userId;
 
-    // generate an object representing a recipe
-    // can be used to generate seed data for db, or req.body data 
+    // generate an object representing a recipe for db and req.body
     const recipeData = {
-        name: faker.lorem.word,
-        categories: [ faker.lorem.word, faker.lorem.word, faker.lorem.word ],
+        name: faker.lorem.word(),
+        categories: [ faker.lorem.word(), faker.lorem.word(), faker.lorem.word() ],
         ingredients: [{
-            ingredient: faker.lorem.word,
-            amount: faker.lorem.word
+            ingredient: faker.lorem.word(),
+            amount: faker.lorem.word()
         }],
-        directions: faker.lorem.words
+        directions: faker.lorem.words()
     }
 
+    // need to create mock user because of protected endpoint 
     function createMockUser() {
         console.info('creating mock user');
         return chai.request(app)
@@ -53,14 +54,13 @@ describe('/api/recipes', function() {
 
     function seedRecipeData(userId) { 
         console.info('seeding recipe data');
+        recipeData.userId = userId; 
         return Recipe.create(recipeData)
             .then(recipe => {
-                recipe.userId = userId; 
                 return chai.request(app)
-                    .post('/api/recipes')
+                    .post(`/api/recipes/${userId}`)
                     .set('Authorization', `Bearer ${authToken}`)
                     .send(recipe)
-                    .then(res => recipeID = res.body.id)
                     .catch(err => console.log(err))
             })
             .catch(err => console.log(err))
@@ -68,15 +68,15 @@ describe('/api/recipes', function() {
 
     function logUserIn() {
         console.info('loggin in')
-        return chai.request(app)
-            .post('/api/auth/login')
-            .send({username: 'username', password: 'password12'})
-            .then(res => {
-                authToken = res.body.authToken,
-                userId = res.body.userObj.id,
-                seedRecipeData(userId)
+        return chai.request(app) // returns a promise, chai.request makes http request to server (app), like app.express uses 'app' too 
+            .post('/api/auth/login')  // chained post method, path 
+            .send({username: 'username', password: 'password12'}) // req.body 
+            .then(res => {  // res.body 
+                authToken = res.body.authToken, // set global variable to use throughout testing
+                userId = res.body.userObj.id,  // set global variable to use throughout testing
+                seedRecipeData(userId)  // call seedRecipeData with userId, just as if a user logged in, and added a recipe, connected to their id 
             })
-            .catch(err => console.log(err))
+            .catch(err => console.log(err))  
     }
 
     // deletees the entire database, call it in 'afterEach'
@@ -109,34 +109,35 @@ describe('/api/recipes', function() {
     describe('GET endpoint', () => {
 
         // seeds db with test data
-        beforeEach(() => () => {
+        beforeEach(() => {
             return createMockUser();
         })
 
         it('Should reject unauthorized requests', () => {
-            return chai.request(app)
-                .get('/api/recipes')
-                .set('Authorization', 'Bearer IamAuthorized')
+            return chai.request(app)    // http request, returned as a promise
+                .get(`/api/recipes/${userId}`) // chained GET method, path with userId (global var)
+                .set('Authorization', 'Bearer IamAuthorized') // et head, key/value pair (value purposely incorrect here)
                 .then(() => 
                     expect.fail(null, null, 'Request should not succeed')) // .fail(actual, expected, [message], [operator])
                 .catch(err => {
-                    console.log('initial error', err)
-                    if (!err instanceof chai.AssertionError) { // what's this for?
+                    // console.log('initial error', err)
+                    if (err instanceof chai.AssertionError) { // what's this for?
                         throw err;
                     }
-                    const res = err.response;
-                    console.log('error res is',res)
-                    expect(res).to.have.status(401);
-                    expect(res.test).to.equal('Unauthorized')
+                    const res = err.response;  // set res to response error 
+                    // console.log('error res is',res)
+                    expect(res).to.have.status(401); // assertion, expect specific status 
+                    expect(res.test).to.equal('Unauthorized') // assserts that target is strictly (===) equal to val 
                 });
         })
 
         // grab all recipes for user 
-        it('Should return user recipes on root request', () => {
+        it('Should return all the recipes for a specific user', () => {
             let _res;
-            return chai.request(app)
-                .get('/api/recipes')
-                .set('Authorization', `Bearer ${authToken}`) // set for header?
+            console.log('USER CREDNTIALS', authToken, userId)
+            return chai.request(app)  // return promise, chai http request method 
+                .get(`/api/recipes/${userId}`) // chained GET method, path with userId (global var)
+                .set('Authorization', `Bearer ${authToken}`) // set head, key/value pair 
                 .then(res => {
                     _res = res;
                     expect(res).to.have.status(200);
@@ -144,12 +145,12 @@ describe('/api/recipes', function() {
                     expect(res).to.be.json;
                     const expectedKeys = ['userId', 'id', 'name', 'categories', 'ingredients', 'directions'];
                     expect(res.body[0]).to.have.keys(expectedKeys)
-                    const resRecipe = res.body[0];
-                    return Recipe.findById(resRecipe.id).exec() // exce() ?
+                    const resRecipe = res.body[0]; // grab first recipe in array of recipes from req.body 
+                    return Recipe.findById(resRecipe.id).exec() // exce() tests for match in a string 
                 })
                 .then(recipe => {
-                    const resRecipe = _res.body[0];
-                    expect(resRecipe.userId).to.deep.equal(`${userId}`) // check userId?
+                    const resRecipe = _res.body[0]; // grab first recipe in array of recipes from req.body 
+                    expect(resRecipe.userId).to.deep.equal(`${userId}`) // deep equal (==) instead of strict (===), deep equal cares about the contents of the object, rather than referential equality
                     expect(resRecipe.id).to.deep.equal(recipe.id);
                     expect(resRecipe.name).to.deep.equal(recipe.name);
                     expect(resRecipe.directions).to.deep.equal(recipe.directions);
@@ -159,39 +160,101 @@ describe('/api/recipes', function() {
                 })
         });
     
-        it('Should return a specific recipe on GET by id', () => {
+    //     it('Should return a specific users recipe on GET by id', () => {
+    //         let _res;
+    //         return chai.request(app)
+    //             .get(`/api/recipes/${userId}`) 
+    //             .set('Authorization', `Bearer ${authToken}`)
+    //             .then(res => {
+    //                 _res = res;
+    //                 expect(res.body).to.be.json;
+    //                 const expectedKeys = ['userId', 'id', 'name', 'categories', 'ingredients', 'directions'];
+    //                 expect(res.body).to.have.keys(expectedKeys);
+    //                 const resRecipe = res.body;
+    //                 return Recipe.findById(resRecipe.id).exec()
+    //             })
+    //             .then(recipe => {
+    //                 const resRecipe = _res.body;
+    //                 expect(resRecipe.userId).to.deep.equal(`${recipe.userId}`); // check userId?
+    //                 expect(resRecipe.id).to.deep.equal(recipe.id);
+    //                 expect(resRecipe.name).to.deep.equal(recipe.name);
+    //                 expect(resRecipe.directions).to.deep.equal(recipe.directions);
+    //                 expect(resRecipe.categories).to.be.a('array');
+    //                 expect(resRecipe.ingredients).to.be.a('array');
+    //                 // do categories/ingredients need more assersions?
+    //             })
+    //     })
+    })
+
+
+
+    describe('POST endpoint', () => {
+        
+        beforeEach(() => {
+            return createMockUser();
+        })
+
+        it('Should create new recipe, linked to user', () => {
             let _res;
-            return chai.request(app)
-                .get(`/api/recipes/${userId}`) // not sure where userID from
-                .set('Authorization', `Bearer ${authToken}`)
-                .then(res => {
-                    _res = res;
-                    expect(res.body).to.be.json;
+            Recipe.create(recipeData)
+              .then(recipe => {
+                console.log('POST created new recipe', recipe)
+                return chai.request(app)
+                .post(`/api/recipes/${userId}`) // userId for new recipe
+                .set('Authorization', `Bearer ${authToken}`) // set head, key/value pair 
+                .send(recipe) // send payload 
+                .then(res => { // test assertions for payload
+                    _res = res; // payload 
+                    expect(res).to.have.status(201);
+                    expect(res).to.be.a('object');
+                    expect(res).to.be.json;
                     const expectedKeys = ['userId', 'id', 'name', 'categories', 'ingredients', 'directions'];
                     expect(res.body).to.have.keys(expectedKeys);
                     const resRecipe = res.body;
                     return Recipe.findById(resRecipe.id).exec()
                 })
-                .then(recipe => {
-                    const resRecipe = _res.body;
-                    expect(resRecipe.userId).to.deep.equal(`${recipe.userId}`); // check userId?
+                .then(recipe => { // test assertions for res.body
+                    const resRecipe = _res.body; // set resRecipe as payload/_res.body
+                    expect(resRecipe.userId).to.deep.equal(`${userId}`) // deep equal (==) instead of strict (===), deep equal cares about the contents of the object, rather than referential equality
                     expect(resRecipe.id).to.deep.equal(recipe.id);
                     expect(resRecipe.name).to.deep.equal(recipe.name);
                     expect(resRecipe.directions).to.deep.equal(recipe.directions);
                     expect(resRecipe.categories).to.be.a('array');
                     expect(resRecipe.ingredients).to.be.a('array');
-                    // do categories/ingredients need more assersions?
                 })
+              })
         })
     })
 
 
+    // describe('PUT endpoint', () => {
 
+    //     beforeEach(() => {
+    //         return createMockUser();
+    //     })
 
-
-    // describe('POST requests', () => {
-        
-    //     it('Should')
+    //     it('Should reject unauthorized requests', () => {
+    //         return chai.request(app)
+    //             .put(`/api/recipes/${userId}`)
+    //             .set('Authorization', `Bearer ${authToken}`)
+    //             .then(() => {
+    //                 return expect.fail(null, null, 'Request should not succeed')
+    //             })
+    //             .catch(err => {
+    //                 if (err instanceof chai.AssertionError) {
+    //                     throw err;
+    //                 }
+    //                 const res = err.response;
+    //                 expect(res).to.have.status(401);
+    //                 expect(res.text).to.equal('Unauthorized')
+    //             })
+    //     })
     // })
 
+
+
+// Should update specific recipe from user
 })
+
+
+// delete, should delete recipe from user 

@@ -11,7 +11,7 @@ const router = express.Router();
 router.get('/', (req, res) => {
     Recipe.find()
         .then(recipes => {
-            res.json({recipes})
+            res.json(recipes)
         })
         .catch(err => {
             console.error(err)
@@ -46,7 +46,7 @@ router.post('/', (req, res) => {
     //         message: `Required \`${missingField}\` missing.`
     //     });
     //     return;
-    // }
+    // } 
 
     console.log(req.body)
     Recipe.create({

@@ -8,15 +8,15 @@ const expect = chai.expect;
 
 chai.use(chaiHttp);
 
-describe('API', function() {
+// describe('API', function() {
 
-    it('should 200 on GET requests', function() {
-        return chai.request(app)
-        .get('/api/')
-        .then(function(res) {
-            res.should.have.status(200);
-            res.should.be.json;
-        });
-    });
-});
+//     it('should 200 on GET requests', function() {
+//         return chai.request(app)
+//         .get('/api/recipes')
+//         .then(function(res) {
+//             res.should.have.status(200);
+//             res.should.be.json;
+//         });
+//     });
+// });
 
