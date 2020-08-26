@@ -127,7 +127,7 @@ router.post('/', (req, res) => {
 
 
 
-// update grocery list connected to user id 
+// update grocery list and category connected to user id 
 router.put('/:id', jwtAuth, (req, res) => {
   console.log('grocery list here', req.params, req.body, req.body.id)
   if(!(req.params.id && req.body.id && req.params.id == req.body.id)) {
