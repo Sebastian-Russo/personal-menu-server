@@ -85,9 +85,9 @@ router.put('/:id', (req, res) => {
     });
 
     Recipe
-        // .findByIdAndUpdate(
-            .findOneAndUpdate(
-            {_id: req.params.id, 
+        .findByIdAndUpdate(
+            // .findOneAndUpdate(
+            {_id: req.params.id}, 
             {$set: toUpdate}, 
             {new: true},
         //     (err, recipe) => {
