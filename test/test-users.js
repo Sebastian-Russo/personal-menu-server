@@ -50,7 +50,9 @@ describe("Users endpoint", function() {
           firstName,
           lastName
         })
-        .then(() => expect.fail(null, null, "Request should not succeed"))
+        .then(() => {
+            expect.fail("Request should not succeed")
+        })
         .catch(err => {
           if (err instanceof chai.AssertionError) {
             throw err;
@@ -311,10 +313,10 @@ describe("Users endpoint", function() {
         })
         .then(() => expect.fail(null, null, "Request should not succeed"))
         .catch(err => {
-          if (err instanceof chai.AssertionError) {
-            throw err;
-          }
-
+        //   if (err instanceof chai.AssertionError) {
+        //     throw err;
+        //   }
+            console.log('ERROR', err)
           const res = err.response;
           expect(res).to.have.status(422);
           expect(res.body.reason).to.equal("ValidationError");
@@ -347,10 +349,10 @@ describe("Users endpoint", function() {
         )
         .then(() => expect.fail(null, null, "Request should not succeed"))
         .catch(err => {
-          if (err instanceof chai.AssertionError) {
-            throw err;
-          }
-
+        //   if (err instanceof chai.AssertionError) {
+        //     throw err;
+        //   }
+            console.log('ERROR', err)
           const res = err.response;
           expect(res).to.have.status(422);
           expect(res.body.reason).to.equal("ValidationError");
@@ -451,7 +453,6 @@ describe("Users endpoint", function() {
       )
         .then(() => chai.request(app).get("/api/users"))
         .then(res => {
-            console.log('res body', res.body)
           expect(res).to.have.status(200);
           expect(res.body).to.be.an("array");
           expect(res.body).to.have.length(2);

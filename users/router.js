@@ -10,10 +10,11 @@ router.post('/', (req, res) => {
     const missingField = requiredFields.find(field => !(field in req.body));
   
     if (missingField) {
+      console.log('MISSING FIELD', missingField)
       return res.status(422).json({
         code: 422,
         reason: 'ValidationError',
-        message: 'Missing field',
+        message: `Missing ${missingField}`,
         location: missingField
       });
     }
@@ -88,7 +89,7 @@ router.post('/', (req, res) => {
     lastName = lastName.trim();
   
     return User.find({username})
-      .count()
+      .countDocuments()
       .then(count => {
         if (count > 0) {
           // There is an existing user with the same username
@@ -119,7 +120,7 @@ router.post('/', (req, res) => {
         if (err.reason === 'ValidationError') {
           return res.status(err.code).json(err);
         }
-        res.status(500).json({code: 500, message: 'Internal server error'});
+        res.status(500).json({code: 500, message: err.message });
       });
 });
 
@@ -152,7 +153,7 @@ router.put('/:id', jwtAuth, (req, res) => {
               categoryList: updateUser.categoryList
           })
       })
-      .catch(err => res.status(500).json({ message: 'Internal server error'}));
+      .catch(err => res.status(500).json({ message: err.message }));
 });
 
 
@@ -160,7 +161,7 @@ router.put('/:id', jwtAuth, (req, res) => {
 router.get('/', (req, res) => {
     return User.find()
       .then(users => res.json(users.map(user => user.serialize())))
-      .catch(err => res.status(500).json({message: 'Internal server error'}));
+      .catch(err => res.status(500).json({message: err.message }));
 });
 
 
