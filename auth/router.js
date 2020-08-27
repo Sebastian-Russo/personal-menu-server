@@ -24,9 +24,7 @@ router.post('/login', localAuth, (req, res) => {
   console.log(authToken, userObj)
   res.json({ // send back to front end when user logs in (action obj in response to user login)
     authToken,
-    userObj
-    // userId: userObj.id, // send back user id match with all recipe id's
-    // username: userObj.username 
+    userObj // { userId: userObj.id, username: userObj.username }  send back user id match with all recipe id's
   });
 });
 

@@ -549,7 +549,7 @@
 //                 .catch(err => console.log(err))  
 //         }
 
-//         it('Should update categoryList and/or groceryList', () => {
+//         it('Should update user lists: (categoryList, groceryList)', () => {
 //             const updatedUser = {
 //                 'id': userId,
 //                 'groceryList': ['item1', 'item2'],
@@ -571,5 +571,6 @@
 //         })
 
 //     })  
+
 
 // });
