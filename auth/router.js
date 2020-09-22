@@ -21,7 +21,7 @@ router.use(bodyParser.json());
 router.post('/login', localAuth, (req, res) => {
   const userObj = req.user.serialize()
   const authToken = createAuthToken(userObj);
-  console.log(authToken, userObj)
+  console.log('AUTH AND USER', authToken, userObj)
   res.json({ // send back to front end when user logs in (action obj in response to user login)
     authToken,
     userObj // { userId: userObj.id, username: userObj.username }  send back user id match with all recipe id's

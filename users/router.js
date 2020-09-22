@@ -148,7 +148,7 @@ router.put('/:id', jwtAuth, (req, res) => {
   User
       .findByIdAndUpdate(req.params.id, {$set: toUpdate}, {new: true})
       .then(updateUser => {
-          res.status(200).json({
+          res.status(204).json({
               groceryList: updateUser.groceryList,
               categoryList: updateUser.categoryList
           })

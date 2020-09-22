@@ -60,7 +60,6 @@ describe("Users endpoint", function() {
           }
 
           const res = err.response;
-          console.log(res.response)
           expect(res).to.have.status(422);
           expect(res.body.reason).to.equal("ValidationError");
           expect(res.body.message).to.equal("Missing field");
@@ -174,7 +173,6 @@ describe("Users endpoint", function() {
           }
 
           const res = err.response;
-          console.log(res)
           expect(res).to.have.status(422);
           expect(res.body.reason).to.equal("ValidationError");
           expect(res.body.message).to.equal(
@@ -541,26 +539,26 @@ describe("Users endpoint", function() {
             return chai.request(app) // returns a promise, chai.request makes http request to server (app), like app.express uses 'app' too 
                 .post('/api/auth/login')  // chained post method, path 
                 .send({username: 'username', password: 'password12'}) // payload/ req.body 
-                .then(res =>   // res.body 
-                    authToken = res.body.authToken, // set global variable to use throughout testing
-                    userId = res.body.userObj.id,  // set global variable to use throughout testing
-                    // seedRecipeData(userId)  // call seedRecipeData with userId, just as if a user logged in, and added a recipe, connected to their id 
-                )
+                .then(res => { // res.body 
+                    authToken = res.body.authToken // set global variable to use throughout testing
+                    userId = res.body.userObj.id  // set global variable to use throughout testing
+                    return seedRecipeData(userId)  // call seedRecipeData with userId, just as if a user logged in, and added a recipe, connected to their id 
+                })
                 .catch(err => console.log(err))  
         }
 
-        it('Should update user lists: (categoryList, groceryList)', () => {
+        it.only('Should update user lists: (categoryList, groceryList)', () => {
             const updatedUser = {
                 'id': userId,
                 'groceryList': ['item1', 'item2'],
                 'categoryList': ['brunch', 'supper']
             }
+            console.log("userId", userId, "auth", authToken)
             return chai.request(app)
-            .put(`/api/recipes/${userId}`)
+            .put(`/api/users/${userId}`)
             .set('Authorization', `Bearer ${authToken}`)
             .send(updatedUser)
             .then(res => {
-                console.log('UPDATE RES.BODY', res.body)
                 expect(res).to.have.status(204)
                 return User.findById(userId);
             })

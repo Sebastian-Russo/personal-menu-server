@@ -84,24 +84,18 @@ router.put('/:id', (req, res) => {
         }
     });
 
+    console.log('UPDATING', toUpdate);
+
     Recipe
-        .findByIdAndUpdate(
-            // .findOneAndUpdate(
-            {_id: req.params.id}, 
+        .findOneAndUpdate({_id: req.params.id}, 
             {$set: toUpdate}, 
-            {new: true},
-        //     (err, recipe) => {
-        //         if (err) {
-        //             console.error(err)
-        //         } else {
-        //             return recipe
-        //         }
-        //     }
+            {new: true}
         )
         .then(updateRecipe => {
             console.log('UPDATE RECIPE', updateRecipe)
-            res.status(204).json({
-                id: updateRecipe.id, // connects recipe to user 
+            
+            return res.status(204).json({
+                id: updateRecipe._id, // connects recipe to user 
                 name: updateRecipe.name,
                 categories: updateRecipe.categories, 
                 ingredients: updateRecipe.ingredients,

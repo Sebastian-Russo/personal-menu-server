@@ -44,7 +44,8 @@ describe('/api/recipes', function() {
                 .send(recipeData)
                 .then(res => {
                     recipeId = res.body._id
-                    console.log('RECIPE DATA', recipeData, res.body, 'recipeId is', recipeId)
+                    console.log('RECIPE DATA', recipeData, 'recipeId is', recipeId)
+                    return
                 })
                 .catch(err => console.log(err))
     }
@@ -55,9 +56,9 @@ describe('/api/recipes', function() {
             .post('/api/auth/login')  // chained post method, path 
             .send({username: 'username', password: 'password12'}) // payload/ req.body 
             .then(res => {  // res.body 
-                authToken = res.body.authToken, // set global variable to use throughout testing
-                userId = res.body.userObj.id,  // set global variable to use throughout testing
-                seedRecipeData(userId)  // call seedRecipeData with userId, just as if a user logged in, and added a recipe, connected to their id 
+                authToken = res.body.authToken; // set global variable to use throughout testing
+                userId = res.body.userObj.id; // set global variable to use throughout testing
+                return seedRecipeData(userId)  // call seedRecipeData with userId, just as if a user logged in, and added a recipe, connected to their id 
             })
             .catch(err => console.log(err))  
     }
@@ -227,7 +228,7 @@ describe('/api/recipes', function() {
 
         it('Should reject unauthorized requests', () => {
             return chai.request(app)
-                .put(`/api/recipes/${userId}`)
+                .put(`/api/recipes/${recipeId}`)
                 .set('Authorization', `Bearer ${authToken}`)
                 .then((res) => {
                     console.log('RESPONSE BODY', res.body)
@@ -243,9 +244,9 @@ describe('/api/recipes', function() {
                 })
         })
 
-        it('Should update the correct recipe by id', () => {
+        it ('Should update the correct recipe by id', () => {
             const updatedRecipe = {
-                'id': userId,
+                'id': recipeId,
                 'name': 'New Name',
                 'directions': 'New directions',
                 'categories': ['new cat', 'new cat', 'new cat'],
@@ -256,7 +257,7 @@ describe('/api/recipes', function() {
             }
             console.log(recipeId, userId)
             return chai.request(app)
-                .put(`/api/recipes/${userId}`)
+                .put(`/api/recipes/${recipeId}`)
                 .set('Authorization', `Bearer ${authToken}`)
                 .send(updatedRecipe)
                 .then(res => { // test payload
@@ -265,13 +266,16 @@ describe('/api/recipes', function() {
                     return Recipe.findById(recipeId);
                 })
                 .then(recipe => {
+                    console.log('RETURNED', recipe);
                     expect(recipe.name).to.deep.equal('New Name');
                     expect(recipe.directions).to.deep.equal('New directions');
                     expect(recipe.categories).to.deep.equal(['new cat', 'new cat', 'new cat']);
-                    expect(recipe.ingredients).to.deep.equal([ {
-                        'ingredient': 'new ingredient',
-                        'amount': 'new amount'
-                    }])
+                    expect(recipe.ingredients[0].ingredient).to.deep.equal("new ingredient");
+                    expect(recipe.ingredients[0].amount).to.deep.equal("new amount");
+                    // expect(recipe.ingredients.ingredient).to.deep.equal([ {
+                    //     ingredient: 'new ingredient',
+                    //     amount: 'new amount'
+                    // }])
                 })
         })
     })
